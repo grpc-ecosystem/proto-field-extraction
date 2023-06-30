@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/proto_field_extraction/field_value_extractor/field_value_extractor_factory.h"
+#include "proto_field_extraction/field_value_extractor/field_value_extractor_factory.h"
 
 #include <deque>
 #include <memory>
@@ -24,9 +24,9 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "src/proto_field_extraction/field_extractor/field_extractor_util.h"
-#include "src/proto_field_extraction/field_value_extractor/field_value_extractor.h"
-#include "src/proto_field_extraction/utils/constants.h"
+#include "proto_field_extraction/field_extractor/field_extractor_util.h"
+#include "proto_field_extraction/field_value_extractor/field_value_extractor.h"
+#include "proto_field_extraction/utils/constants.h"
 #include "ocpdiag/core/compat/status_macros.h"
 
 namespace google::protobuf::field_extraction {

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/proto_field_extraction/field_value_extractor/field_value_extractor.h"
+#include "proto_field_extraction/field_value_extractor/field_value_extractor.h"
 
 #include <cstdint>
 #include <string>

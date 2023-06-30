@@ -22,10 +22,10 @@
 #include "testing/fuzzing/fuzztest.h"
 #include "absl/functional/bind_front.h"
 #include "absl/strings/string_view.h"
-#include "src/proto_field_extraction/field_value_extractor/field_value_extractor.h"
-#include "src/proto_field_extraction/message_data/cord_message_data.h"
-#include "src/proto_field_extraction/test_utils/testdata/field_extractor_test.pb.h"
-#include "src/proto_field_extraction/test_utils/utils.h"
+#include "proto_field_extraction/field_value_extractor/field_value_extractor.h"
+#include "proto_field_extraction/message_data/cord_message_data.h"
+#include "proto_field_extraction/test_utils/testdata/field_extractor_test.pb.h"
+#include "proto_field_extraction/test_utils/utils.h"
 
 namespace google::protobuf::field_extraction::testing {
 namespace {
