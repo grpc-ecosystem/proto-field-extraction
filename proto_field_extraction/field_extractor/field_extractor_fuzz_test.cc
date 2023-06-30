@@ -19,10 +19,10 @@
 #include "gmock/gmock.h"
 #include "testing/fuzzing/fuzztest.h"
 #include "absl/functional/bind_front.h"
-#include "src/proto_field_extraction/field_extractor/field_extractor.h"
-#include "src/proto_field_extraction/field_extractor/field_extractor_test_lib.h"
-#include "src/proto_field_extraction/message_data/cord_message_data.h"
-#include "src/proto_field_extraction/test_utils/utils.h"
+#include "proto_field_extraction/field_extractor/field_extractor.h"
+#include "proto_field_extraction/field_extractor/field_extractor_test_lib.h"
+#include "proto_field_extraction/message_data/cord_message_data.h"
+#include "proto_field_extraction/test_utils/utils.h"
 
 namespace google::protobuf::field_extraction::testing {
 

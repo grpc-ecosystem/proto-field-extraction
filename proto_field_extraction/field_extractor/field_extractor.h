@@ -27,8 +27,8 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "src/proto_field_extraction/message_data/message_data.h"
-#include "src/proto_field_extraction/utils/constants.h"
+#include "proto_field_extraction/message_data/message_data.h"
+#include "proto_field_extraction/utils/constants.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "ocpdiag/core/compat/status_macros.h"
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/proto_field_extraction/utils/constants.h"
+#include "proto_field_extraction/utils/constants.h"
 
 #include "absl/base/attributes.h"
 

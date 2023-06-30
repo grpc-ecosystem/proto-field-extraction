@@ -24,7 +24,7 @@
 #include "google/protobuf/type.pb.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "src/proto_field_extraction/utils/constants.h"
+#include "proto_field_extraction/utils/constants.h"
 
 namespace google::protobuf::field_extraction {
 // Represents a node in a field mask path, which contains the field at the node

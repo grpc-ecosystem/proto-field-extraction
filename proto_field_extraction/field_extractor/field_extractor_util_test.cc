@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/proto_field_extraction/field_extractor/field_extractor_util.h"
+#include "proto_field_extraction/field_extractor/field_extractor_util.h"
 
 #include <memory>
 #include <string>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "src/proto_field_extraction/test_utils/utils.h"
+#include "proto_field_extraction/test_utils/utils.h"
 
 namespace google::protobuf::field_extraction::testing {
 namespace {

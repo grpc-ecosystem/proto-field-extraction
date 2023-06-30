@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/proto_field_extraction/field_value_extractor/field_value_extractor_factory.h"
+#include "proto_field_extraction/field_value_extractor/field_value_extractor_factory.h"
 
 #include <functional>
 #include <memory>
@@ -24,9 +24,9 @@
 #include "absl/functional/bind_front.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "src/proto_field_extraction/message_data/cord_message_data.h"
-#include "src/proto_field_extraction/test_utils/testdata/field_extractor_test.pb.h"
-#include "src/proto_field_extraction/test_utils/utils.h"
+#include "proto_field_extraction/message_data/cord_message_data.h"
+#include "proto_field_extraction/test_utils/testdata/field_extractor_test.pb.h"
+#include "proto_field_extraction/test_utils/utils.h"
 #include "ocpdiag/core/testing/proto_matchers.h"
 #include "ocpdiag/core/testing/status_matchers.h"
 
