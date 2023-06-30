@@ -24,7 +24,7 @@
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/type.pb.h"
 #include "absl/status/statusor.h"
-#include "src/test_utils/testdata/field_extractor_test.pb.h"
+#include "src/proto_field_extraction/test_utils/testdata/field_extractor_test.pb.h"
 #include "google/protobuf/io/coded_stream.h"
 
 namespace google::protobuf::field_extraction::testing {

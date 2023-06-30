@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/field_extractor/field_extractor_test_lib.h"
+#include "src/proto_field_extraction/field_extractor/field_extractor_test_lib.h"
 
 #include <memory>
 #include <string>
@@ -21,7 +21,7 @@
 
 #include "gtest/gtest.h"
 #include "absl/status/statusor.h"
-#include "src/field_extractor/field_extractor.h"
+#include "src/proto_field_extraction/field_extractor/field_extractor.h"
 #include "google/protobuf/wire_format_lite.h"
 
 namespace google::protobuf::field_extraction::testing {

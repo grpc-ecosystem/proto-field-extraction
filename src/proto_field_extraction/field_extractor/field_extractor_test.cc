@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/field_extractor/field_extractor.h"
+#include "src/proto_field_extraction/field_extractor/field_extractor.h"
 
 #include <cstdint>
 #include <functional>
@@ -28,10 +28,10 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
-#include "src/field_extractor/field_extractor_test_lib.h"
-#include "src/message_data/cord_message_data.h"
-#include "src/test_utils/testdata/field_extractor_test.pb.h"
-#include "src/test_utils/utils.h"
+#include "src/proto_field_extraction/field_extractor/field_extractor_test_lib.h"
+#include "src/proto_field_extraction/message_data/cord_message_data.h"
+#include "src/proto_field_extraction/test_utils/testdata/field_extractor_test.pb.h"
+#include "src/proto_field_extraction/test_utils/utils.h"
 #include "ocpdiag/core/testing/proto_matchers.h"
 #include "ocpdiag/core/testing/status_matchers.h"
 
@@ -58,15 +58,13 @@ class FieldExtractorTest : public ::testing::Test {
 
   void SetUp() override {
     ASSERT_OK(GetTextProto(
-        GetTestDataFilePath("src/"
-                            "test_utils/testdata/"
+        GetTestDataFilePath("test_utils/testdata/"
                             "field_extractor_test_message.proto.txt"),
         &test_message_proto_));
     message_data_ = std::make_unique<CordMessageData>(
         test_message_proto_.SerializeAsCord());
 
     auto status = TypeHelper::Create(GetTestDataFilePath(
-        "src/"
         "test_utils/testdata/field_extractor_test_proto_descriptor.pb"));
     ASSERT_OK(status);
     type_helper_ = std::move(status.value());

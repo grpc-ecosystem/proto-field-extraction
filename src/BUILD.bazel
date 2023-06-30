@@ -18,10 +18,10 @@ cc_library(
     name = "all_libs",
     visibility = ["//visibility:public"],
     deps = [
-        "//src/field_extractor",
-        "//src/field_value_extractor",
-        "//src/field_value_extractor:field_value_extractor_factory",
-        "//src/message_data:cord_message_data",
-        "//src/message_data:message_data_interface",
+        "//src/proto_field_extraction/field_extractor",
+        "//src/proto_field_extraction/field_value_extractor",
+        "//src/proto_field_extraction/field_value_extractor:field_value_extractor_factory",
+        "//src/proto_field_extraction/message_data:cord_message_data",
+        "//src/proto_field_extraction/message_data:message_data_interface",
     ],
 )

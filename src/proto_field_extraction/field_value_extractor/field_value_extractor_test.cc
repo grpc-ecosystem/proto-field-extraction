@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/field_value_extractor/field_value_extractor.h"
+#include "src/proto_field_extraction/field_value_extractor/field_value_extractor.h"
 
 #include <cstdint>
 #include <functional>
@@ -31,10 +31,10 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "grpc_transcoding/type_helper.h"
-#include "src/field_extractor/field_extractor.h"
-#include "src/message_data/cord_message_data.h"
-#include "src/test_utils/testdata/field_extractor_test.pb.h"
-#include "src/test_utils/utils.h"
+#include "src/proto_field_extraction/field_extractor/field_extractor.h"
+#include "src/proto_field_extraction/message_data/cord_message_data.h"
+#include "src/proto_field_extraction/test_utils/testdata/field_extractor_test.pb.h"
+#include "src/proto_field_extraction/test_utils/utils.h"
 
 #include "ocpdiag/core/testing/proto_matchers.h"
 #include "ocpdiag/core/testing/status_matchers.h"
@@ -69,8 +69,7 @@ class FieldValueExtractorTest : public ::testing::Test {
 
   void SetUp() override {
     ASSERT_OK(GetTextProto(
-        GetTestDataFilePath("src/"
-                            "test_utils/testdata/"
+        GetTestDataFilePath("test_utils/testdata/"
                             "field_value_extractor_test_message.proto.txt"),
         &field_extractor_test_message_proto_));
     singular_field_test_message_proto_ =
@@ -82,7 +81,6 @@ class FieldValueExtractorTest : public ::testing::Test {
         singular_field_test_message_proto_.SerializeAsCord());
 
     auto status = TypeHelper::Create(GetTestDataFilePath(
-        "src/"
         "test_utils/testdata/field_extractor_test_proto_descriptor.pb"));
     ASSERT_OK(status);
     type_helper_ = std::move(status.value());

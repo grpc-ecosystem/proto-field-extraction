@@ -25,8 +25,8 @@
 #include "google/api/service.pb.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "src/field_extractor/field_extractor.h"
-#include "src/field_value_extractor/field_value_extractor_interface.h"
+#include "src/proto_field_extraction/field_extractor/field_extractor.h"
+#include "src/proto_field_extraction/field_value_extractor/field_value_extractor_interface.h"
 
 namespace google::protobuf::field_extraction {
 

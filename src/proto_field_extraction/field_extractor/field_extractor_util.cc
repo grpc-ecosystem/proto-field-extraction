@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/field_extractor/field_extractor_util.h"
+#include "src/proto_field_extraction/field_extractor/field_extractor_util.h"
 
 #include <functional>
 #include <list>
 #include <string>
 #include <vector>
 
-#include "src/utils/constants.h"
+#include "src/proto_field_extraction/utils/constants.h"
 
 namespace google::protobuf::field_extraction {
 namespace {

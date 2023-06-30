@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/test_utils/utils.h"
+#include "src/proto_field_extraction/test_utils/utils.h"
 
 #include <memory>
 
@@ -78,7 +78,7 @@ absl::StatusOr<google::protobuf::FileDescriptorSet> GetDescriptorFromBinary(
 }  // namespace
 
 std::string GetTestDataFilePath(absl::string_view path) {
-  return std::string(path);
+  return absl::StrCat("src/proto_field_extraction/", std::string(path));
 }
 
 absl::Status GetTextProto(absl::string_view filename,

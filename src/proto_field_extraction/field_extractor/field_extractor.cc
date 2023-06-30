@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/field_extractor/field_extractor.h"
+#include "src/proto_field_extraction/field_extractor/field_extractor.h"
 
 #include <cstdint>
 #include <functional>
@@ -24,7 +24,7 @@
 #include "absl/log/check.h"
 #include "absl/log/die_if_null.h"
 #include "absl/strings/substitute.h"
-#include "src/field_extractor/field_extractor_util.h"
+#include "src/proto_field_extraction/field_extractor/field_extractor_util.h"
 
 namespace google::protobuf::field_extraction {
 namespace {
