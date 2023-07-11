@@ -86,19 +86,17 @@ FieldExtractor::CreateFieldPathNode(const Field& field) const {
     if (const Type* field_type = type_finder_(field.type_url());
         field_type != nullptr) {
       return FieldPathNode{
-          .field = &field,
-          .type = field_type,
-          .is_map =
-              custom_proto_map_entry_name_.empty()
-                  ? IsMapMessageType(field_type)
-                  : IsMapMessageType(field_type, custom_proto_map_entry_name_),
-          .is_any = IsAnyMessageType(field_type)};
+          &field, field_type,
+          custom_proto_map_entry_name_.empty()
+              ? IsMapMessageType(field_type)
+              : IsMapMessageType(field_type, custom_proto_map_entry_name_),
+          IsAnyMessageType(field_type)};
     }
     return absl::InvalidArgumentError(
         absl::Substitute("Cannot find the type of field '$0'.", field.name()));
   }
-  return FieldPathNode{
-      .field = &field, .type = nullptr, .is_map = false, .is_any = false};
+  return FieldPathNode{&field, /*type=*/nullptr, /*is_map=*/false,
+                       /*is_any=*/false};
 }
 
 absl::StatusOr<FieldExtractor::FieldPathNode>
