@@ -176,7 +176,7 @@ FieldValueExtractorFactory::ValidateFieldPathAndCollectMetadata(
     if (support_any && IsAnyMessageType(parent_message_type)) {
       // If we see a proto buf any field, we can not continue the validation.
       // We will assume it's valid and perform runtime validation instead.
-      return FieldMetadata{.field_path_json_name = std::string(field_path)};
+      return FieldMetadata{std::string(field_path)};
     }
   } while (!field_names.empty());
 
@@ -189,7 +189,6 @@ FieldValueExtractorFactory::ValidateFieldPathAndCollectMetadata(
 
   RETURN_IF_ERROR(ValidateLeafNode(*current_field));
 
-  return FieldMetadata{.field_path_json_name =
-                           absl::StrJoin(field_json_names, ".")};
+  return FieldMetadata{absl::StrJoin(field_json_names, ".")};
 }
 }  // namespace google::protobuf::field_extraction
