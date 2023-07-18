@@ -126,7 +126,10 @@ absl::StatusOr<const Type*> FieldExtractor::ProcessNonLeafMapNode(
     const CodedInputStreamWrapperFactory& root_message,
     const FieldExtractor::FieldPathNode& map_node) const {
   ASSIGN_OR_RETURN(FieldPathNode map_value_node, ResolveMapValueNode(map_node));
-  RETURN_IF_ERROR(ValidateNonLeafNode(map_value_node, /*allow_repeated=*/true));
+  auto status = ValidateNonLeafNode(map_value_node, /*allow_repeated=*/true);
+  if (!status.ok()) {
+    return status;
+  }
   // Move the cursor to the map value data.
   if (!SearchField(*map_value_node.field, input_stream)) {
     // return nullptr to skip empty map entry.
