@@ -27,7 +27,6 @@
 #include "proto_field_extraction/field_extractor/field_extractor_util.h"
 #include "proto_field_extraction/field_value_extractor/field_value_extractor.h"
 #include "proto_field_extraction/utils/constants.h"
-#include "ocpdiag/core/compat/status_macros.h"
 
 namespace google::protobuf::field_extraction {
 namespace {
@@ -187,7 +186,10 @@ FieldValueExtractorFactory::ValidateFieldPathAndCollectMetadata(
         " of non message type (", current_field->type_url(), ")."));
   }
 
-  RETURN_IF_ERROR(ValidateLeafNode(*current_field));
+  auto status = ValidateLeafNode(*current_field);
+  if (!status.ok()) {
+    return status;
+  }
 
   return FieldMetadata{absl::StrJoin(field_json_names, ".")};
 }

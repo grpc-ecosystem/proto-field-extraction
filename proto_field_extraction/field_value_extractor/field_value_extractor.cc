@@ -25,7 +25,6 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/wire_format_lite.h"
-#include "ocpdiag/core/compat/status_macros.h"
 
 namespace google::protobuf::field_extraction {
 

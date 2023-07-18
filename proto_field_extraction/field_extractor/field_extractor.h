@@ -28,8 +28,8 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "proto_field_extraction/message_data/message_data.h"
-#include "proto_field_extraction/utils/constants.h"
 #include "google/protobuf/io/coded_stream.h"
+#undef RETURN_IF_ERROR
 #include "ocpdiag/core/compat/status_macros.h"
 
 namespace google::protobuf::field_extraction {
@@ -346,6 +346,7 @@ class FieldExtractor {
   FieldExtractor& operator=(const FieldExtractor&) = delete;
 };
 
+#undef RETURN_IF_ERROR
 }  // namespace google::protobuf::field_extraction
 
 #endif  // PROTO_FIELD_EXTRACTION_SRC_FIELD_EXTRACTOR_FIELD_EXTRACTOR_H_
