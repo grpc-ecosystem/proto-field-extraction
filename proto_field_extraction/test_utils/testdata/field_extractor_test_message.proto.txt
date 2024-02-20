@@ -74,6 +74,75 @@ repeated_field_leaf {
 
   repeated_sint64: 12345678900
   repeated_sint64: 12345678901
+
+  map_double { key: "map_double_field_key_0" value: 1.111 }
+  map_double { key: "map_double_field_key_1" value: 1.112 }
+
+  map_float { key: "map_float_field_key_0" value: 1.11 }
+  map_float { key: "map_float_field_key_1" value: 1.12 }
+
+  map_int64 { key: "map_int64_field_key_0" value: 12 }
+  map_int64 { key: "map_int64_field_key_1" value: 13 }
+
+  map_uint64 { key: "map_uint64_field_key_0" value: 123 }
+  map_uint64 { key: "map_uint64_field_key_1" value: 124 }
+
+  map_int32 { key: "map_int32_field_key_0" value: 1234 }
+  map_int32 { key: "map_int32_field_key_1" value: 1235 }
+
+  map_fixed64 { key: "map_fixed64_field_key_0" value: 12345 }
+  map_fixed64 { key: "map_fixed64_field_key_1" value: 12346 }
+
+  map_fixed32 { key: "map_fixed32_field_key_0" value: 12345 }
+  map_fixed32 { key: "map_fixed32_field_key_1" value: 12346 }
+
+  map_uint32 { key: "map_uint32_field_key_0" value: 1234567 }
+  map_uint32 { key: "map_uint32_field_key_1" value: 1234568 }
+
+  map_sfixed64 { key: "map_sfixed64_field_key_0" value: 1234567 }
+  map_sfixed64 { key: "map_sfixed64_field_key_1" value: 1234568 }
+
+  map_sfixed32 { key: "map_sfixed32_field_key_0" value: 1234567 }
+  map_sfixed32 { key: "map_sfixed32_field_key_1" value: 1234568 }
+
+  map_sint32 { key: "map_sint32_field_key_0" value: 1234567 }
+  map_sint32 { key: "map_sint32_field_key_1" value: 1234568 }
+
+  map_sint64 { key: "map_sint64_field_key_0" value: 1234567 }
+  map_sint64 { key: "map_sint64_field_key_1" value: 1234568 }
+
+  map_bool_bool { key: true value: false }
+  map_bool_bool { key: false value: true }
+
+  map_int64_int64 { key: 12 value: 12 }
+  map_int64_int64 { key: 13 value: 13 }
+
+  map_uint64_uint64 { key: 123 value: 123 }
+  map_uint64_uint64 { key: 124 value: 124 }
+
+  map_int32_int32 { key: 1234 value: 1234 }
+  map_int32_int32 { key: 1235 value: 1235 }
+
+  map_fixed64_fixed64 { key: 12345 value: 12345 }
+  map_fixed64_fixed64 { key: 12346 value: 12346 }
+
+  map_fixed32_fixed32 { key: 12345 value: 12345 }
+  map_fixed32_fixed32 { key: 12346 value: 12346 }
+
+  map_uint32_uint32 { key: 1234567 value: 1234567 }
+  map_uint32_uint32 { key: 1234568 value: 1234568 }
+
+  map_sfixed64_sfixed64 { key: 1234567 value: 1234567 }
+  map_sfixed64_sfixed64 { key: 1234568 value: 1234568 }
+
+  map_sfixed32_sfixed32 { key: 1234567 value: 1234567 }
+  map_sfixed32_sfixed32 { key: 1234568 value: 1234568 }
+
+  map_sint32_sint32 { key: 1234567 value: 1234567 }
+  map_sint32_sint32 { key: 1234568 value: 1234568 }
+
+  map_sint64_sint64 { key: 1234567 value: 1234567 }
+  map_sint64_sint64 { key: 1234568 value: 1234568 }
 }
 
 repeated_singular_fields {

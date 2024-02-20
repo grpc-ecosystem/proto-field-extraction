@@ -17,8 +17,11 @@
 #include <functional>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "proto_field_extraction/utils/constants.h"
 
 namespace google::protobuf::field_extraction {
@@ -68,6 +71,25 @@ const Field* FindField(const Type& type, const absl::string_view field_name) {
     }
   }
   return nullptr;
+}
+
+std::vector<absl::string_view> ConvertValuesToStrings(
+    absl::Span<const google::protobuf::Value> values) {
+  std::vector<absl::string_view> result;
+  result.reserve(values.size());
+  for (const auto& value : values) {
+    if (value.has_string_value()) {
+      result.push_back(value.string_value());
+    } else if (value.has_struct_value()) {
+      for (const auto& field : value.struct_value().fields()) {
+        if (field.second.has_string_value()) {
+          result.push_back(field.second.string_value());
+        }
+      }
+    }
+  }
+
+  return result;
 }
 
 }  // namespace google::protobuf::field_extraction

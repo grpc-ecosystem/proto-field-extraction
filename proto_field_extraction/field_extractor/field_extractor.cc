@@ -25,6 +25,7 @@
 #include "absl/log/die_if_null.h"
 #include "absl/strings/substitute.h"
 #include "proto_field_extraction/field_extractor/field_extractor_util.h"
+#include "proto_field_extraction/utils/constants.h"
 
 namespace google::protobuf::field_extraction {
 namespace {
@@ -109,6 +110,14 @@ FieldExtractor::CreateFieldPathNode(const Type& enclosing_type,
   return absl::InvalidArgumentError(
       absl::Substitute("Cannot find field '$0' in '$1' message.", field_name,
                        enclosing_type.name()));
+}
+
+absl::StatusOr<FieldExtractor::FieldPathNode> FieldExtractor::ResolveMapKeyNode(
+    const FieldExtractor::FieldPathNode& map_node) const {
+  DCHECK_NE(map_node.type, nullptr);
+  const Field* map_key_field = FindField(*map_node.type, kProtoMapKeyFieldName);
+  DCHECK_NE(map_key_field, nullptr);
+  return CreateFieldPathNode(*map_key_field);
 }
 
 absl::StatusOr<FieldExtractor::FieldPathNode>

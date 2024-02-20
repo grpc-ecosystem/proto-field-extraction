@@ -29,7 +29,7 @@ documentation:
     (== suppress_warning legacy-contacts ==)
     (== suppress_warning versioning-config ==)
   summary:
-    CPE Field Extractor Test
+    Field Extractor Test
 
 backend:
   rules:

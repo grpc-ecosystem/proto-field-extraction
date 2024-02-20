@@ -21,11 +21,13 @@
 #include <vector>
 
 #include "google/api/service.pb.h"
+#include "google/protobuf/struct.pb.h"
 #include "google/protobuf/timestamp.pb.h"
 #include "ocpdiag/core/testing/parse_text_proto.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/functional/bind_front.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
@@ -38,6 +40,7 @@
 
 #include "ocpdiag/core/testing/proto_matchers.h"
 #include "ocpdiag/core/testing/status_matchers.h"
+#include "google/protobuf/map.h"
 
 namespace google::protobuf::field_extraction {
 namespace testing {
@@ -45,7 +48,9 @@ namespace testing {
 namespace {
 
 using ::google::protobuf::Type;
+using ::google::protobuf::contrib::parse_proto::ParseTextProtoOrDie;
 using ::testing::ElementsAre;
+using ::ocpdiag::testing::EqualsProto;
 using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
 using ::ocpdiag::testing::IsOkAndHolds;
@@ -121,6 +126,7 @@ class FieldValueExtractorTest : public ::testing::Test {
   std::unique_ptr<CordMessageData> singular_field_ = nullptr;
 };
 
+using ::google::protobuf::contrib::parse_proto::ParseTextProtoOrDie;
 using ExtractSingularFieldTest = FieldValueExtractorTest;
 
 TEST_F(ExtractSingularFieldTest, TypeString) {
@@ -253,16 +259,17 @@ TEST_F(ExtractSingularFieldTest, TypeTimestamp) {
   FieldValueExtractor field_extractor(
       /*field_path=*/"timestamp_field",
       GetCreateFieldExtractorFunc(*singular_field_test_message_type_));
-  // CPE extractor suppots extracting Timestamp as a serialized string.
+  // Field value extractor supports extracting Timestamp as a serialized string.
   EXPECT_THAT(field_extractor.Extract(*singular_field_),
               IsOkAndHolds(ElementsAre(
                   singular_field_test_message_proto_.timestamp_field()
                       .SerializeAsString())));
 }
 
-using CpeExtractSingularFieldHasDuplicateTest = FieldValueExtractorTest;
+using ::google::protobuf::contrib::parse_proto::ParseTextProtoOrDie;
+using ExtractSingularFieldHasDuplicateTest = FieldValueExtractorTest;
 
-TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeString) {
+TEST_F(ExtractSingularFieldHasDuplicateTest, TypeString) {
   std::string last_string = "boom!";
   testing::SingularFieldTestMessage append_request;
   append_request.set_string_field(last_string);
@@ -276,7 +283,7 @@ TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeString) {
               IsOkAndHolds(ElementsAre(last_string)));
 }
 
-TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeInt64) {
+TEST_F(ExtractSingularFieldHasDuplicateTest, TypeInt64) {
   int64_t last_int64 = 66;
   uint64_t last_uint64 = 321;
   int64_t last_sint64 = 12378978900;
@@ -315,7 +322,7 @@ TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeInt64) {
   }
 }
 
-TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeInt32) {
+TEST_F(ExtractSingularFieldHasDuplicateTest, TypeInt32) {
   int32_t last_int32 = 4321;
   uint32_t last_uint32 = 3214567;
   int32_t last_sint32 = 1237897890;
@@ -355,7 +362,7 @@ TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeInt32) {
   }
 }
 
-TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeFloat) {
+TEST_F(ExtractSingularFieldHasDuplicateTest, TypeFloat) {
   float last_float = 6.66;
   testing::SingularFieldTestMessage append_request;
   append_request.set_float_field(last_float);
@@ -368,7 +375,7 @@ TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeFloat) {
               IsOkAndHolds(ElementsAre(absl::StrCat(last_float))));
 }
 
-TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeDouble) {
+TEST_F(ExtractSingularFieldHasDuplicateTest, TypeDouble) {
   double last_double = 6.666;
   testing::SingularFieldTestMessage append_request;
   append_request.set_double_field(last_double);
@@ -381,7 +388,7 @@ TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeDouble) {
               IsOkAndHolds(ElementsAre(absl::StrCat(last_double))));
 }
 
-TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeFixedInt) {
+TEST_F(ExtractSingularFieldHasDuplicateTest, TypeFixedInt) {
   uint32_t last_fixed32 = 125436;
   uint64_t last_fixed64 = 12545;
   int32_t last_sfixed32 = 123789789;
@@ -433,7 +440,7 @@ TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeFixedInt) {
   }
 }
 
-TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeTimestamp) {
+TEST_F(ExtractSingularFieldHasDuplicateTest, TypeTimestamp) {
   google::protobuf::Timestamp last_timestamp =
       ParseTextProtoOrDie(R"pb(seconds: 1237897890, nanos: 5)pb");
 
@@ -450,10 +457,9 @@ TEST_F(CpeExtractSingularFieldHasDuplicateTest, TypeTimestamp) {
               IsOkAndHolds(ElementsAre(last_timestamp.SerializeAsString())));
 }
 
-using CpeExtractSingularFieldLeafNode = FieldValueExtractorTest;
-using CpeExtractSingularFieldLeafNode = FieldValueExtractorTest;
+using ExtractSingularFieldLeafNode = FieldValueExtractorTest;
 
-TEST_F(CpeExtractSingularFieldLeafNode, TypeString) {
+TEST_F(ExtractSingularFieldLeafNode, TypeString) {
   FieldValueExtractor field_extractor(
       /*field_path=*/"singular_field.string_field",
       GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
@@ -463,7 +469,7 @@ TEST_F(CpeExtractSingularFieldLeafNode, TypeString) {
                       .string_field())));
 }
 
-TEST_F(CpeExtractSingularFieldLeafNode, TypeInt64) {
+TEST_F(ExtractSingularFieldLeafNode, TypeInt64) {
   {
     // Type: int64.
     FieldValueExtractor field_extractor(
@@ -497,7 +503,7 @@ TEST_F(CpeExtractSingularFieldLeafNode, TypeInt64) {
   }
 }
 
-TEST_F(CpeExtractSingularFieldLeafNode, TypeInt32) {
+TEST_F(ExtractSingularFieldLeafNode, TypeInt32) {
   {
     // Type: int32.
     FieldValueExtractor field_extractor(
@@ -530,7 +536,7 @@ TEST_F(CpeExtractSingularFieldLeafNode, TypeInt32) {
   }
 }
 
-TEST_F(CpeExtractSingularFieldLeafNode, TypeFloat) {
+TEST_F(ExtractSingularFieldLeafNode, TypeFloat) {
   FieldValueExtractor field_extractor(
       /*field_path=*/"singular_field.float_field",
       GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
@@ -540,7 +546,7 @@ TEST_F(CpeExtractSingularFieldLeafNode, TypeFloat) {
                       .float_field()))));
 }
 
-TEST_F(CpeExtractSingularFieldLeafNode, TypeDouble) {
+TEST_F(ExtractSingularFieldLeafNode, TypeDouble) {
   FieldValueExtractor field_extractor(
       /*field_path=*/"singular_field.double_field",
       GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
@@ -550,7 +556,7 @@ TEST_F(CpeExtractSingularFieldLeafNode, TypeDouble) {
                       .double_field()))));
 }
 
-TEST_F(CpeExtractSingularFieldLeafNode, TypeFixedInt) {
+TEST_F(ExtractSingularFieldLeafNode, TypeFixedInt) {
   {
     // Type: fixed32.
     FieldValueExtractor field_extractor(
@@ -593,7 +599,7 @@ TEST_F(CpeExtractSingularFieldLeafNode, TypeFixedInt) {
   }
 }
 
-TEST_F(CpeExtractSingularFieldLeafNode, TypeTimestamp) {
+TEST_F(ExtractSingularFieldLeafNode, TypeTimestamp) {
   FieldValueExtractor field_extractor(
       /*field_path=*/"singular_field.timestamp_field",
       GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
@@ -605,10 +611,9 @@ TEST_F(CpeExtractSingularFieldLeafNode, TypeTimestamp) {
                       .SerializeAsString())));
 }
 
-using CpeExtractRepeatedFieldLeafNode = FieldValueExtractorTest;
-using CpeExtractRepeatedFieldLeafNode = FieldValueExtractorTest;
+using ExtractRepeatedFieldLeafNode = FieldValueExtractorTest;
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeString) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeString) {
   FieldValueExtractor field_extractor(
       /*field_path=*/"repeated_field_leaf.repeated_string",
       GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
@@ -624,7 +629,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeString) {
                       .repeated_string(3))));
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeTimestamp) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeTimestamp) {
   FieldValueExtractor field_extractor(
       /*field_path=*/"repeated_field_leaf.repeated_timestamp",
       GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
@@ -638,7 +643,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeTimestamp) {
                       .SerializeAsString())));
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeInt64) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeInt64) {
   {
     // Pack encoding
     FieldValueExtractor field_extractor(
@@ -652,6 +657,41 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeInt64) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_int64(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_int64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, int64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_int64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf non string key
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_int64_int64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<int64_t, int64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_int64_int64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding
@@ -669,7 +709,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeInt64) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeUnsignedInt64) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeUnsignedInt64) {
   {
     // Pack encoding
     FieldValueExtractor field_extractor(
@@ -683,6 +723,41 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeUnsignedInt64) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_uint64(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_uint64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, uint64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_uint64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_uint64_uint64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<uint64_t, uint64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_uint64_uint64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding
@@ -700,7 +775,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeUnsignedInt64) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedInt64) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeSignedInt64) {
   {
     // Pack encoding
     FieldValueExtractor field_extractor(
@@ -714,6 +789,41 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedInt64) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_sint64(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_sint64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, int64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_sint64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_sint64_sint64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<int64_t, int64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_sint64_sint64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding
@@ -731,7 +841,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedInt64) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeInt32) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeInt32) {
   {
     // Pack encoding
     FieldValueExtractor field_extractor(
@@ -745,6 +855,41 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeInt32) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_int32(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_int32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, int32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_int32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_int32_int32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<int32_t, int32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_int32_int32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding
@@ -762,7 +907,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeInt32) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeUnsignedInt32) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeUnsignedInt32) {
   {
     // Pack encoding.
     FieldValueExtractor field_extractor(
@@ -776,6 +921,41 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeUnsignedInt32) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_uint32(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_uint32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, uint32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_uint32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_uint32_uint32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<uint32_t, uint32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_uint32_uint32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding.
@@ -793,7 +973,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeUnsignedInt32) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedInt32) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeSignedInt32) {
   {
     // Pack encoding
     FieldValueExtractor field_extractor(
@@ -807,6 +987,41 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedInt32) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_sint32(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_sint32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, int32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_sint32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_sint32_sint32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<int32_t, int32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_sint32_sint32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding.
@@ -824,7 +1039,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedInt32) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeFloat) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeFloat) {
   {
     // Pack encoding.
     FieldValueExtractor field_extractor(
@@ -838,6 +1053,23 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeFloat) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_float(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_float",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, float>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_float();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-Pack encoding.
@@ -855,7 +1087,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeFloat) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeDouble) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeDouble) {
   {
     // Pack encoding
     FieldValueExtractor field_extractor(
@@ -869,6 +1101,23 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeDouble) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_double(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_double",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, double>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_double();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding
@@ -886,7 +1135,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeDouble) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeFixed64) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeFixed64) {
   {
     // Pack encoding.
     FieldValueExtractor field_extractor(
@@ -900,6 +1149,41 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeFixed64) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_fixed64(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_fixed64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, uint64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_fixed64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_fixed64_fixed64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<uint64_t, uint64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_fixed64_fixed64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding.
@@ -917,7 +1201,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeFixed64) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedFixed64) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeSignedFixed64) {
   {
     // Pack encoding.
     FieldValueExtractor field_extractor(
@@ -931,6 +1215,42 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedFixed64) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_sfixed64(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_sfixed64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, int64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_sfixed64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_sfixed64_sfixed64",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<int64_t, int64_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_sfixed64_sfixed64();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding.
@@ -948,7 +1268,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedFixed64) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeFixed32) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeFixed32) {
   {
     // Pack encoding.
     FieldValueExtractor field_extractor(
@@ -962,6 +1282,41 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeFixed32) {
                     absl::StrCat(field_extractor_test_message_proto_
                                      .repeated_field_leaf()
                                      .repeated_fixed32(1)))));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_fixed32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, uint32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf().map_fixed32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_fixed32_fixed32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<uint32_t, uint32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_fixed32_fixed32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
   }
   {
     // Non-pack encoding.
@@ -979,7 +1334,7 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeFixed32) {
   }
 }
 
-TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedFixed32) {
+TEST_F(ExtractRepeatedFieldLeafNode, TypeSignedFixed32) {
   {
     // Pack encoding.
     FieldValueExtractor field_extractor(
@@ -995,6 +1350,42 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedFixed32) {
                                      .repeated_sfixed32(1)))));
   }
   {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_sfixed32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<std::string, int32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_sfixed32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
+    // Map leaf
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"repeated_field_leaf.map_sfixed32_sfixed32",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    std::vector<std::string> expected_value;
+    const google::protobuf::Map<int32_t, int32_t>& map_entry =
+        field_extractor_test_message_proto_.repeated_field_leaf()
+            .map_sfixed32_sfixed32();
+    expected_value.reserve(map_entry.size());
+    for (const auto& map_entry : map_entry) {
+      expected_value.push_back(absl::StrCat(map_entry.second));
+    }
+
+    EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
+  }
+  {
     // Non-pack encoding.
     FieldValueExtractor field_extractor(
         /*field_path=*/"repeated_field_leaf_unpack.repeated_sfixed32",
@@ -1008,6 +1399,19 @@ TEST_F(CpeExtractRepeatedFieldLeafNode, TypeSignedFixed32) {
                                      .repeated_field_leaf_unpack()
                                      .repeated_sfixed32(1)))));
   }
+}
+
+TEST_F(ExtractRepeatedFieldLeafNode, Bool) {
+  // Map leaf
+  FieldValueExtractor field_extractor(
+      /*field_path=*/"repeated_field_leaf.map_bool_bool",
+      GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+  // Bool value is not supported by field extractor.
+  EXPECT_THAT(field_extractor.Extract(*field_extractor_),
+              ::ocpdiag::testing::StatusIs(
+                  absl::StatusCode::kInternal,
+                  "Unexpected field type for repeated primitive field: value"));
 }
 
 TEST_F(FieldValueExtractorTest, ExtractNonLeafNodeAsRepeatedSingularFields) {
@@ -1116,9 +1520,9 @@ TEST_F(FieldValueExtractorTest, ExtractAllNodesAsRepeatedFields) {
                       .repeated_string(1))));
 }
 
-using CpeExtractMapFieldTest = FieldValueExtractorTest;
+using ExtractMapFieldTest = FieldValueExtractorTest;
 
-TEST_F(CpeExtractMapFieldTest, LeafNodeTypeString) {
+TEST_F(ExtractMapFieldTest, LeafNodeTypeString) {
   FieldValueExtractor field_extractor(
       /*field_path=*/"repeated_field_leaf.map_string",
       GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
@@ -1134,7 +1538,7 @@ TEST_F(CpeExtractMapFieldTest, LeafNodeTypeString) {
               IsOkAndHolds(UnorderedElementsAreArray(expected_value)));
 }
 
-TEST_F(CpeExtractMapFieldTest, AllMapValueInRepeatedFields) {
+TEST_F(ExtractMapFieldTest, AllMapValueInRepeatedFields) {
   FieldValueExtractor field_extractor(
       /*field_path=*/"repeated_field.repeated_field.repeated_field.map_string",
       GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
@@ -1150,7 +1554,7 @@ TEST_F(CpeExtractMapFieldTest, AllMapValueInRepeatedFields) {
                                         "1_level1_2_level2_2_leaf_string_1")));
 }
 
-TEST_F(CpeExtractMapFieldTest, NonLeafNodeAsRepeatedMap) {
+TEST_F(ExtractMapFieldTest, NonLeafNodeAsRepeatedMap) {
   {
     FieldValueExtractor field_extractor(
         /*field_path=*/"map_singular_field.string_field",
@@ -1169,7 +1573,7 @@ TEST_F(CpeExtractMapFieldTest, NonLeafNodeAsRepeatedMap) {
   }
 }
 
-TEST_F(CpeExtractMapFieldTest, RepeatedNestedMap) {
+TEST_F(ExtractMapFieldTest, RepeatedNestedMap) {
   {
     FieldValueExtractor field_extractor(
         /*field_path=*/"repeated_map_field.map_field.map_field.name",
@@ -1200,5 +1604,127 @@ TEST_F(CpeExtractMapFieldTest, RepeatedNestedMap) {
   }
 }
 
+using ExtractFieldAsProtoValueTest = FieldValueExtractorTest;
+
+TEST_F(ExtractFieldAsProtoValueTest, LeafNodeTypeString) {
+  FieldValueExtractor field_extractor(
+      /*field_path=*/"repeated_field_leaf.map_string",
+      GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+  EXPECT_THAT(field_extractor.ExtractValue(*field_extractor_),
+              IsOkAndHolds(UnorderedElementsAre(EqualsProto(
+                  R"pb(
+                    struct_value {
+                      fields {
+                        key: "map_string_field_key_0"
+                        value { string_value: "string_0" }
+                      }
+                      fields {
+                        key: "map_string_field_key_1"
+                        value { string_value: "string_1" }
+                      }
+                    }
+                  )pb"))));
+}
+
+TEST_F(ExtractFieldAsProtoValueTest, AllMapValueInRepeatedFields) {
+  FieldValueExtractor field_extractor(
+      /*field_path=*/"repeated_field.repeated_field.repeated_field.map_string",
+      GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+  EXPECT_THAT(
+      field_extractor.ExtractValue(*field_extractor_),
+      IsOkAndHolds(UnorderedElementsAre(
+          EqualsProto(
+              R"pb(struct_value {
+                     fields {
+                       key: "map_string_field_key_0"
+                       value {
+                         string_value: "1_level1_1_level2_1_leaf_string_0"
+                       }
+                     }
+                     fields {
+                       key: "map_string_field_key_1"
+                       value {
+                         string_value: "1_level1_1_level2_1_leaf_string_1"
+                       }
+                     }
+                   })pb"),
+          EqualsProto(
+              R"pb(struct_value {
+                     fields {
+                       key: "map_string_field_key_0"
+                       value {
+                         string_value: "1_level1_1_level2_2_leaf_string_0"
+                       }
+                     }
+                     fields {
+                       key: "map_string_field_key_1"
+                       value {
+                         string_value: "1_level1_1_level2_2_leaf_string_1"
+                       }
+                     }
+                   })pb"),
+          EqualsProto(
+              R"pb(struct_value {
+                     fields {
+                       key: "map_string_field_key_0"
+                       value {
+                         string_value: "1_level1_2_level2_1_leaf_string_0"
+                       }
+                     }
+                     fields {
+                       key: "map_string_field_key_1"
+                       value {
+                         string_value: "1_level1_2_level2_1_leaf_string_1"
+                       }
+                     }
+                   })pb"),
+          EqualsProto(
+              R"pb(struct_value {
+                     fields {
+                       key: "map_string_field_key_0"
+                       value {
+                         string_value: "1_level1_2_level2_2_leaf_string_0"
+                       }
+                     }
+                     fields {
+                       key: "map_string_field_key_1"
+                       value {
+                         string_value: "1_level1_2_level2_2_leaf_string_1"
+                       }
+                     }
+                   })pb"))));
+}
+
+TEST_F(ExtractFieldAsProtoValueTest, NonLeafNodeAsRepeatedMap) {
+  {
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"map_singular_field.string_field",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    EXPECT_THAT(field_extractor.ExtractValue(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAre(
+                    EqualsProto(
+                        R"pb(string_value: "map_singular_field_value_string_0"
+                        )pb"),
+                    EqualsProto(
+                        R"pb(string_value: "map_singular_field_value_string_1"
+                        )pb"))));
+  }
+  {
+    FieldValueExtractor field_extractor(
+        /*field_path=*/"map_singular_field.int32_field",
+        GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
+
+    EXPECT_THAT(field_extractor.ExtractValue(*field_extractor_),
+                IsOkAndHolds(UnorderedElementsAre(EqualsProto(
+                                                      R"pb(string_value: "2"
+                                                      )pb"),
+                                                  EqualsProto(
+                                                      R"pb(string_value: "22"
+                                                      )pb"))));
+  }
+}
 }  // namespace testing
 }  // namespace google::protobuf::field_extraction

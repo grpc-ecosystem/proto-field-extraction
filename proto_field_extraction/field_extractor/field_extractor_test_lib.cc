@@ -280,6 +280,45 @@ GetRepeatedStringFieldExtractor() {
       };
 }
 
+FieldInfoMapExtractorFunc<std::vector<std::string>>
+GetRepeatedStringMapFieldExtractor() {
+  return [](const Field* enclosing_field, const Field* key_field,
+            const Field* value_field, CodedInputStream* input_stream)
+             -> absl::StatusOr<std::vector<std::string>> {
+    std::vector<std::string> result;
+    while (FieldExtractor::SearchField(*enclosing_field, input_stream)) {
+      auto limit = input_stream->ReadLengthAndPushLimit();
+      uint32_t tag = 0;
+      std::string key;
+      std::string value;
+      while ((tag = input_stream->ReadTag()) != 0) {
+        if (key_field->number() == WireFormatLite::GetTagFieldNumber(tag)) {
+          // Got Key
+          WireFormatLite::ReadString(input_stream, &key);
+        } else if (value_field->number() ==
+                   WireFormatLite::GetTagFieldNumber(tag)) {
+          // Got Value
+          WireFormatLite::ReadString(input_stream, &value);
+        } else {
+          WireFormatLite::SkipField(input_stream, tag);
+        }
+      }
+
+      if (!key.empty()) {
+        result.push_back(key);
+      }
+      if (!value.empty()) {
+        result.push_back(value);
+      }
+
+      input_stream->Skip(input_stream->BytesUntilLimit());
+      input_stream->PopLimit(limit);
+    }
+
+    return std::move(result);
+  };
+}
+
 FieldInfoExtractorFunc<std::vector<int32_t>> GetRepeatedInt32FieldExtractor() {
   return
       [](const Type& type, const Field* field, CodedInputStream* input_stream)

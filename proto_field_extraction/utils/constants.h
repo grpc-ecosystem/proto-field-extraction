@@ -24,6 +24,7 @@ extern const char* const kAnyType;
 
 // The constants for proto map.
 extern const char* const kProtoMapEntryName;
+extern const char* const kProtoMapKeyFieldName;
 extern const char* const kProtoMapValueFieldName;
 
 }  // namespace google::protobuf::field_extraction

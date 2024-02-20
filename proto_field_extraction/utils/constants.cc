@@ -21,6 +21,7 @@ namespace google::protobuf::field_extraction {
 ABSL_CONST_INIT const char* const kAnyType = "google.protobuf.Any";
 
 ABSL_CONST_INIT const char* const kProtoMapEntryName = "map_entry";
+ABSL_CONST_INIT const char* const kProtoMapKeyFieldName = "key";
 ABSL_CONST_INIT const char* const kProtoMapValueFieldName = "value";
 
 }  // namespace google::protobuf::field_extraction

@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/struct.pb.h"
 #include "google/protobuf/type.pb.h"
 #include "absl/strings/string_view.h"
 #include "proto_field_extraction/field_extractor/field_extractor.h"
@@ -60,6 +61,22 @@ class FieldValueExtractor : public FieldValueExtractorInterface {
   // a field extractor. All the other error status should be caught and return
   // in `FieldValueExtractorFactory::Create()`.
   absl::StatusOr<std::vector<std::string>> Extract(
+      const CodedInputStreamWrapperFactory& message) const override;
+
+  // Extracts the proto field value(s) that match the field path within root
+  // message type from the proto `message`.
+  // If any of the field path nodes is a repeated field (including map)
+  // containing multiple values, then the return vector will contain multiple
+  // strings.
+  //
+  // Returns an error status if the given proto `message` type does not
+  // match the type specified by the root message type that was used to create
+  // a field extractor. All the other error status should be caught and return
+  // in `FieldValueExtractorFactory::Create()`.
+  //
+  // Different to Extract() function, ExtractValue() function will save the
+  // extracted field as a vector of `google.protobuf.Value` instances.
+  absl::StatusOr<std::vector<Value>> ExtractValue(
       const CodedInputStreamWrapperFactory& message) const override;
 
  private:

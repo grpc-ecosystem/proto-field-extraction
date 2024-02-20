@@ -17,9 +17,11 @@
 #ifndef PROTO_FIELD_EXTRACTION_SRC_MESSAGE_DATA_CORD_MESSAGE_DATA_H_
 #define PROTO_FIELD_EXTRACTION_SRC_MESSAGE_DATA_CORD_MESSAGE_DATA_H_
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "proto_field_extraction/message_data/message_data.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -76,6 +78,18 @@ class CordMessageData : public MessageData {
   int64_t Size() const override { return cord_.size(); }
 
   absl::Cord& Cord() { return cord_; }
+
+  absl::Cord SubData(size_t pos, size_t new_size) const override {
+    return cord_.Subcord(pos, new_size);
+  }
+
+  absl::Cord ToCord() const override { return cord_; }
+
+  void CopyFrom(const absl::Cord& other) override { cord_.CopyFrom(other); }
+
+  void Append(const absl::Cord& other) override { cord_.Append(other); }
+
+  bool IsEmpty() const override { return cord_.empty(); }
 
  private:
   absl::Cord cord_;

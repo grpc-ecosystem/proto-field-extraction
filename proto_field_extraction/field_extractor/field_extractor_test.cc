@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,12 +29,14 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/str_cat.h"
 #include "proto_field_extraction/field_extractor/field_extractor_test_lib.h"
 #include "proto_field_extraction/message_data/cord_message_data.h"
 #include "proto_field_extraction/test_utils/testdata/field_extractor_test.pb.h"
 #include "proto_field_extraction/test_utils/utils.h"
 #include "ocpdiag/core/testing/proto_matchers.h"
 #include "ocpdiag/core/testing/status_matchers.h"
+#include "google/protobuf/io/coded_stream.h"
 
 namespace google::protobuf::field_extraction {
 namespace testing {
@@ -330,6 +333,106 @@ TEST_F(FieldExtractorTest, ExtractLeafMap) {
 
   EXPECT_THAT(field_extractor_->ExtractFieldInfo<int64_t>(
                   "repeated_field_leaf.map_string",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_double",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_float",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_int64",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_int32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_fixed64",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_fixed32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_uint32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_sfixed64",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_sfixed32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_sint32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_sint64",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_int64_int64",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_int32_int32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_fixed64_fixed64",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_fixed32_fixed32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_uint32_uint32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_sfixed64_sfixed64",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_sfixed32_sfixed32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_sint32_sint32",
+                  message_data_->CreateCodedInputStreamWrapper()->Get(),
+                  field_info_counting_extractor),
+              IsOkAndHolds(2));
+  EXPECT_THAT(field_extractor_->ExtractFieldInfo<double>(
+                  "repeated_field_leaf.map_sint64_sint64",
                   message_data_->CreateCodedInputStreamWrapper()->Get(),
                   field_info_counting_extractor),
               IsOkAndHolds(2));
@@ -939,6 +1042,27 @@ TEST_F(RepeatedFieldExtractorTest, NestedAnyField) {
           test_message_proto_.repeated_singular_fields(0).string_field(),
           test_message_proto_.repeated_singular_fields(1).string_field(),
           test_message_proto_.repeated_singular_fields(2).string_field())));
+}
+
+TEST_F(RepeatedFieldExtractorTest, MapStringKeyValue) {
+  // Extracts the values of map<string, string> within a singular parent
+  // message field.
+  EXPECT_THAT(
+      field_extractor_->ExtractRepeatedFieldInfoFlattened<std::string>(
+          "repeated_field_leaf.map_string", *message_data_,
+          GetRepeatedStringFieldExtractor(),
+          GetRepeatedStringMapFieldExtractor()),
+      IsOkAndHolds(UnorderedElementsAre("map_string_field_key_0", "string_0",
+                                        "map_string_field_key_1", "string_1")));
+}
+
+TEST_F(RepeatedFieldExtractorTest, MapStringKeyValueNoMapExtractor) {
+  // Extracts the values of map<string, string> within a singular parent
+  // message field.
+  EXPECT_THAT(field_extractor_->ExtractRepeatedFieldInfoFlattened<std::string>(
+                  "repeated_field_leaf.map_string", *message_data_,
+                  GetRepeatedStringFieldExtractor(), std::nullopt),
+              IsOkAndHolds(UnorderedElementsAre("string_0", "string_1")));
 }
 
 }  // namespace testing

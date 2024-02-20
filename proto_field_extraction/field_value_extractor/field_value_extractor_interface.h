@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/struct.pb.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "proto_field_extraction/message_data/message_data.h"
@@ -36,8 +37,12 @@ class FieldValueExtractorInterface {
  public:
   virtual ~FieldValueExtractorInterface() = default;
 
-  // // Extracts the proto field value(s) from a proto `message`.
+  // Extracts the proto field value(s) from a proto `message`.
   virtual absl::StatusOr<std::vector<std::string>> Extract(
+      const CodedInputStreamWrapperFactory& message) const = 0;
+
+  // Extracts the proto field as `google.protobuf.Value` from a proto `message`.
+  virtual absl::StatusOr<std::vector<Value>> ExtractValue(
       const CodedInputStreamWrapperFactory& message) const = 0;
 };
 

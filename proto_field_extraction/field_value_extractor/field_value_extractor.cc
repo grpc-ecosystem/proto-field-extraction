@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/struct.pb.h"
 #include "google/protobuf/type.pb.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -233,6 +234,55 @@ absl::StatusOr<std::string> SingularFieldUseLastValue(
   return last_value;
 }
 
+// Extracts the entry of given leaf `field` whose type is `map` in proto
+// `input_stream`.
+absl::StatusOr<std::vector<Value>> ExtractMapField(
+    const Field* enclosing_field, const Field* key_field,
+    const Field* value_field, CodedInputStream* input_stream) {
+  std::vector<Value> result;
+  // Only parse the map whose key type is STRING format.
+  if (key_field->kind() != Field::TYPE_STRING &&
+      value_field->kind() != Field::TYPE_STRING) {
+    return absl::InvalidArgumentError(
+        "Only STRING key and value are supported for map field extraction.");
+  }
+
+  google::protobuf::Struct proto_struct;
+  while (FieldExtractor::SearchField(*enclosing_field, input_stream)) {
+    auto limit = input_stream->ReadLengthAndPushLimit();
+    uint32_t tag = 0;
+    std::string key;
+    std::string value;
+    while ((tag = input_stream->ReadTag()) != 0) {
+      if (key_field->number() == WireFormatLite::GetTagFieldNumber(tag)) {
+        // Got Key
+        WireFormatLite::ReadString(input_stream, &key);
+      } else if (value_field->number() ==
+                 WireFormatLite::GetTagFieldNumber(tag)) {
+        // Got Value
+        WireFormatLite::ReadString(input_stream, &value);
+      } else {
+        WireFormatLite::SkipField(input_stream, tag);
+      }
+    }
+
+    if (!key.empty()) {
+      (*proto_struct.mutable_fields())[key].set_string_value(value);
+    }
+
+    input_stream->Skip(input_stream->BytesUntilLimit());
+    input_stream->PopLimit(limit);
+  }
+
+  if (proto_struct.fields_size() > 0) {
+    Value item;
+    *item.mutable_struct_value() = proto_struct;
+    result.push_back(item);
+  }
+
+  return std::move(result);
+}
+
 // Extracts the value of given `field` within `enclosing_type` from the
 // proto `input_stream`. The field cardinality can be either singular or
 // repeated.
@@ -240,10 +290,11 @@ absl::StatusOr<std::string> SingularFieldUseLastValue(
 // This function is expected to work with `FieldExtractor` defined in
 // tech/internal/env/framework/field_mask/field_extractor.h to extract the
 // field value specified by a field mask path.
-absl::StatusOr<std::vector<std::string>> ExtractLeafField(
+absl::StatusOr<std::vector<Value>> ExtractLeafField(
     const Type& enclosing_type, const Field* field,
     CodedInputStream* input_stream) {
   std::vector<std::string> result;
+  std::vector<Value> values;
   if (field->cardinality() == Field::CARDINALITY_REPEATED) {
     // [Repeated Field]
     uint32_t tag = 0;
@@ -295,15 +346,37 @@ absl::StatusOr<std::vector<std::string>> ExtractLeafField(
     }
   }
 
-  return std::move(result);
+  for (const auto& str : result) {
+    Value item;
+    item.set_string_value(str);
+    values.push_back(item);
+  }
+
+  return std::move(values);
 }
 
 }  // namespace
 
 absl::StatusOr<std::vector<std::string>> FieldValueExtractor::Extract(
     const CodedInputStreamWrapperFactory& message) const {
-  return field_extractor_->ExtractRepeatedFieldInfoFlattened<std::string>(
-      field_path_, message, ExtractLeafField);
+  absl::StatusOr<std::vector<Value>> values_status_or =
+      field_extractor_->ExtractRepeatedFieldInfoFlattened<Value>(
+          field_path_, message, ExtractLeafField);
+  if (!values_status_or.ok()) {
+    return values_status_or.status();
+  }
+
+  std::vector<std::string> result;
+  for (const auto& value : values_status_or.value()) {
+    result.push_back(value.string_value());
+  }
+  return result;
+}
+
+absl::StatusOr<std::vector<Value>> FieldValueExtractor::ExtractValue(
+    const CodedInputStreamWrapperFactory& message) const {
+  return field_extractor_->ExtractRepeatedFieldInfoFlattened<Value>(
+      field_path_, message, ExtractLeafField, ExtractMapField);
 }
 
 }  // namespace google::protobuf::field_extraction

@@ -47,8 +47,9 @@ constexpr char kFieldExtractorTestMessageTypeUrl[] =
 template <typename T>
 using FieldInfoExtractorFunc = std::function<absl::StatusOr<T>(
     const Type&, const Field*, CodedInputStream*)>;
-
-
+template <typename T>
+using FieldInfoMapExtractorFunc = std::function<absl::StatusOr<T>(
+    const Field*, const Field*, const Field*, CodedInputStream*)>;
 
 FieldInfoExtractorFunc<std::string> GetDummyStringFieldExtractor();
 FieldInfoExtractorFunc<std::string> GetStringFieldExtractor();
@@ -72,6 +73,8 @@ FieldInfoExtractorFunc<std::vector<SingularFieldTestMessage>>
 GetRepeatedMessageFieldExtractor();
 FieldInfoExtractorFunc<std::vector<std::string>>
 GetRepeatedStringFieldExtractor();
+FieldInfoMapExtractorFunc<std::vector<std::string>>
+GetRepeatedStringMapFieldExtractor();
 FieldInfoExtractorFunc<std::vector<int32_t>> GetRepeatedInt32FieldExtractor();
 FieldInfoExtractorFunc<int64_t> GetFieldInfoCountingExtractor();
 FieldInfoExtractorFunc<Any> GetAnyFieldExtractor();

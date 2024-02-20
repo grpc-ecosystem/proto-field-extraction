@@ -17,9 +17,11 @@
 #ifndef PROTO_FIELD_EXTRACTION_SRC_MESSAGE_DATA_MESSAGE_DATA_H_
 #define PROTO_FIELD_EXTRACTION_SRC_MESSAGE_DATA_MESSAGE_DATA_H_
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 
+#include "absl/strings/cord.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -68,6 +70,23 @@ class MessageData : public CodedInputStreamWrapperFactory {
   // Removes the last `n` bytes of the message data.
   virtual void RemoveSuffix(size_t n) = 0;
 
+  // Returns a new Cord with data copy, representing the subrange [pos, pos +
+  // new_size).
+  // If pos >= size(), the result is empty().
+  // If (pos + new_size) >= size(), the result is the subrange [pos, size()).
+  virtual absl::Cord SubData(size_t pos, size_t new_size) const = 0;
+
+  // Returns a new Cord with data copy, representing the entire message.
+  virtual absl::Cord ToCord() const = 0;
+
+  // Copies data from other Cord to (this*).
+  virtual void CopyFrom(const absl::Cord& other) = 0;
+
+  // Appends data to the Cord, which comes from another Cord.
+  virtual void Append(const absl::Cord& other) = 0;
+
+  virtual bool IsEmpty() const = 0;
+
   // The size of MessageData
   virtual int64_t Size() const = 0;
 
@@ -75,4 +94,5 @@ class MessageData : public CodedInputStreamWrapperFactory {
 };
 
 }  // namespace google::protobuf::field_extraction
+
 #endif  // PROTO_FIELD_EXTRACTION_SRC_MESSAGE_DATA_MESSAGE_DATA_H_

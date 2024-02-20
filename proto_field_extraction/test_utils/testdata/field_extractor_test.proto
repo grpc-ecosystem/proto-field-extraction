@@ -140,6 +140,52 @@ message RepeatedField {
   map<string, RepeatedField> map_field = 20;
 
   repeated google.protobuf.Timestamp repeated_timestamp = 21;
+
+  map<string, double> map_double = 24;
+
+  map<string, float> map_float = 25;
+
+  map<string, int64> map_int64 = 26;
+
+  map<string, uint64> map_uint64 = 27;
+
+  map<string, int32> map_int32 = 28;
+
+  map<string, fixed64> map_fixed64 = 29;
+
+  map<string, fixed32> map_fixed32 = 30;
+
+  map<string, uint32> map_uint32 = 32;
+
+  map<string, sfixed64> map_sfixed64 = 33;
+
+  map<string, sfixed32> map_sfixed32 = 34;
+
+  map<string, sint32> map_sint32 = 35;
+
+  map<string, sint64> map_sint64 = 36;
+
+  map<bool, bool> map_bool_bool = 37;
+
+  map<int64, int64> map_int64_int64 = 39;
+
+  map<uint64, uint64> map_uint64_uint64 = 40;
+
+  map<int32, int32> map_int32_int32 = 41;
+
+  map<fixed64, fixed64> map_fixed64_fixed64 = 42;
+
+  map<fixed32, fixed32> map_fixed32_fixed32 = 43;
+
+  map<uint32, uint32> map_uint32_uint32 = 44;
+
+  map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 45;
+
+  map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 46;
+
+  map<sint32, sint32> map_sint32_sint32 = 47;
+
+  map<sint64, sint64> map_sint64_sint64 = 48;
 }
 
 message RepeatedFieldLeafUnpack {

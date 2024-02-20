@@ -16,9 +16,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "ocpdiag/core/testing/parse_text_proto.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "absl/types/span.h"
 #include "proto_field_extraction/test_utils/utils.h"
 
 namespace google::protobuf::field_extraction::testing {
@@ -26,9 +29,11 @@ namespace {
 
 using ::google::protobuf::Field;
 using ::google::protobuf::Type;
+using ::google::protobuf::contrib::parse_proto::ParseTextProtoOrDie;
 using ::testing::AllOf;
 using ::testing::Pointee;
 using ::testing::Property;
+using ::testing::UnorderedElementsAre;
 
 constexpr char kFieldExtractorTestMessageTypeUrl[] =
     "type.googleapis.com/"
@@ -91,6 +96,52 @@ TEST_F(FieldExtractorUtilTest, IsAnyMessageType) {
       FindField(*test_message_type_, "singular_any_field")->type_url())));
   EXPECT_TRUE(IsAnyMessageType(FindType(
       FindField(*test_message_type_, "repeated_any_fields")->type_url())));
+}
+
+TEST_F(FieldExtractorUtilTest, ConvertValuesToStrings) {
+  {
+    // Empty values;
+    std::vector<google::protobuf::Value> values;
+    auto converted_values = ConvertValuesToStrings(values);
+
+    EXPECT_EQ(converted_values.size(), 0);
+  }
+  {
+    std::vector<google::protobuf::Value> values = {
+        ParseTextProtoOrDie(R"pb(
+          string_value: "value_string_1"
+        )pb"),
+        ParseTextProtoOrDie(R"pb(
+          string_value: "value_string_2"
+        )pb"),
+        ParseTextProtoOrDie(R"pb(
+          number_value: 1.234
+        )pb"),
+        ParseTextProtoOrDie(R"pb(
+          struct_value: {
+            fields {
+              key: "configuration_key_1"
+              value { string_value: "configuration_struct_value_1" }
+            }
+            fields {
+              key: "configuration_key_2"
+              value { string_value: "configuration_struct_value_2" }
+            }
+            fields {
+              key: "key_string_1"
+              value { string_value: "value_string_1" }
+            }
+          }
+        )pb")};
+
+    auto converted_values = ConvertValuesToStrings(values);
+
+    EXPECT_THAT(
+        converted_values,
+        UnorderedElementsAre("value_string_1", "value_string_1",
+                             "value_string_2", "configuration_struct_value_2",
+                             "configuration_struct_value_1"));
+  }
 }
 }  // namespace
 }  // namespace google::protobuf::field_extraction::testing

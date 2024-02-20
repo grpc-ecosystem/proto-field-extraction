@@ -21,9 +21,11 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/struct.pb.h"
 #include "google/protobuf/type.pb.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "proto_field_extraction/utils/constants.h"
 
 namespace google::protobuf::field_extraction {
@@ -46,6 +48,10 @@ bool IsAnyMessageType(const google::protobuf::Type* type);
 // when the given field name is not found in the `type`.
 const google::protobuf::Field* FindField(const google::protobuf::Type& type,
                                          absl::string_view field_name);
+
+// Convert a list of `google::protbuf::Value` into a list of strings.
+std::vector<absl::string_view> ConvertValuesToStrings(
+    absl::Span<const google::protobuf::Value> values);
 
 }  // namespace google::protobuf::field_extraction
 

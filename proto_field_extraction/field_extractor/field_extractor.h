@@ -19,6 +19,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -50,6 +51,11 @@ class FieldExtractor {
   using FieldInfoExtractionFn = std::function<absl::StatusOr<T>(
       const google::protobuf::Type&, const google::protobuf::Field*,
       google::protobuf::io::CodedInputStream*)>;
+
+  template <class T>
+  using FieldInfoMapExtractionFn = std::function<absl::StatusOr<T>(
+      const google::protobuf::Field*, const google::protobuf::Field*,
+      const google::protobuf::Field*, google::protobuf::io::CodedInputStream*)>;
 
   // custom_proto_map_entry_name is the customized protobuf map entry name. If
   // it is unspecified, it is `map_entry`.
@@ -99,7 +105,9 @@ class FieldExtractor {
   absl::StatusOr<std::vector<T>> ExtractRepeatedFieldInfo(
       const std::string& field_mask_path,
       const CodedInputStreamWrapperFactory& message,
-      const FieldInfoExtractionFn<T>& field_info_extractor) const {
+      const FieldInfoExtractionFn<T>& field_info_extractor,
+      std::optional<FieldInfoMapExtractionFn<T>> field_info_map_extractor =
+          std::nullopt) const {
     if (field_mask_path.empty()) {
       return absl::InvalidArgumentError("Field mask path cannot be empty.");
     }
@@ -110,7 +118,8 @@ class FieldExtractor {
     auto stream = message.CreateCodedInputStreamWrapper();
     RETURN_IF_ERROR(ExtractRepeatedFieldInfoHelper(
         &stream->Get(), message, root_type_, field_names.cbegin(),
-        field_names.cend(), field_info_extractor, &result));
+        field_names.cend(), field_info_extractor, field_info_map_extractor,
+        &result));
     return result;
   }
 
@@ -125,10 +134,13 @@ class FieldExtractor {
   absl::StatusOr<std::vector<T>> ExtractRepeatedFieldInfoFlattened(
       const std::string& field_mask_path,
       const CodedInputStreamWrapperFactory& message,
-      const FieldInfoExtractionFn<std::vector<T>>& field_info_extractor) const {
-    ASSIGN_OR_RETURN(std::vector<std::vector<T>> raw_result,
-                     ExtractRepeatedFieldInfo(field_mask_path, message,
-                                              field_info_extractor));
+      const FieldInfoExtractionFn<std::vector<T>>& field_info_extractor,
+      std::optional<FieldInfoMapExtractionFn<std::vector<T>>>
+          field_info_map_extractor = std::nullopt) const {
+    ASSIGN_OR_RETURN(
+        std::vector<std::vector<T>> raw_result,
+        ExtractRepeatedFieldInfo(field_mask_path, message, field_info_extractor,
+                                 field_info_map_extractor));
     std::vector<T> result;
     for (auto& item : raw_result) {
       std::move(item.begin(), item.end(), std::back_inserter(result));
@@ -203,6 +215,7 @@ class FieldExtractor {
       const std::vector<absl::string_view>::const_iterator current,
       const std::vector<absl::string_view>::const_iterator end,
       const FieldInfoExtractionFn<T>& field_info_extractor,
+      std::optional<FieldInfoMapExtractionFn<T>> field_info_map_extractor,
       std::vector<T>* results) const {
     // Find the current field info.
     ASSIGN_OR_RETURN(FieldPathNode current_node,
@@ -211,19 +224,33 @@ class FieldExtractor {
     // Base case of recursion: we have reached to the last field in the path.
     if (current + 1 == end) {
       if (current_node.is_map) {
-        // If the current node is a map field, move the cursor to the map value
-        // which is the effective field to pass to the FieldInfoExtractionFn.
+        ASSIGN_OR_RETURN(auto map_key_node, ResolveMapKeyNode(current_node));
         ASSIGN_OR_RETURN(auto map_value_node,
                          ResolveMapValueNode(current_node));
-        while (SearchField(*current_node.field, input_stream)) {
-          auto limit = input_stream->ReadLengthAndPushLimit();
-          ASSIGN_OR_RETURN(
-              auto result,
-              field_info_extractor(*current_node.type, map_value_node.field,
-                                   input_stream));
+        if (field_info_map_extractor.has_value() &&
+            (map_key_node.field->kind() == Field::TYPE_STRING &&
+             map_value_node.field->kind() == Field::TYPE_STRING)) {
+          // Extract the map differently when both key and value are `string`
+          // type.
+          ASSIGN_OR_RETURN(auto result,
+                           field_info_map_extractor.value()(
+                               current_node.field, map_key_node.field,
+                               map_value_node.field, input_stream));
           results->push_back(std::move(result));
-          input_stream->Skip(input_stream->BytesUntilLimit());
-          input_stream->PopLimit(limit);
+        } else {
+          // If the current node is a map field, move the cursor to the map
+          // value which is the effective field to pass to the
+          // FieldInfoExtractionFn.
+          while (SearchField(*current_node.field, input_stream)) {
+            auto limit = input_stream->ReadLengthAndPushLimit();
+            ASSIGN_OR_RETURN(
+                auto result,
+                field_info_extractor(*current_node.type, map_value_node.field,
+                                     input_stream));
+            results->push_back(std::move(result));
+            input_stream->Skip(input_stream->BytesUntilLimit());
+            input_stream->PopLimit(limit);
+          }
         }
       } else {
         ASSIGN_OR_RETURN(auto result,
@@ -254,7 +281,7 @@ class FieldExtractor {
           auto map_value_limit = input_stream->ReadLengthAndPushLimit();
           RETURN_IF_ERROR(ExtractRepeatedFieldInfoHelper(
               input_stream, root_message, *map_value_type, current + 1, end,
-              field_info_extractor, results));
+              field_info_extractor, field_info_map_extractor, results));
           input_stream->Skip(input_stream->BytesUntilLimit());
           input_stream->PopLimit(map_value_limit);
         }
@@ -272,7 +299,7 @@ class FieldExtractor {
           auto any_value_limit = input_stream->ReadLengthAndPushLimit();
           RETURN_IF_ERROR(ExtractRepeatedFieldInfoHelper(
               input_stream, root_message, *any_value_type, current + 1, end,
-              field_info_extractor, results));
+              field_info_extractor, field_info_map_extractor, results));
           input_stream->Skip(input_stream->BytesUntilLimit());
           input_stream->PopLimit(any_value_limit);
         }
@@ -282,7 +309,7 @@ class FieldExtractor {
         // Normal message typed field.
         RETURN_IF_ERROR(ExtractRepeatedFieldInfoHelper(
             input_stream, root_message, *current_node.type, current + 1, end,
-            field_info_extractor, results));
+            field_info_extractor, field_info_map_extractor, results));
       }
 
       input_stream->Skip(input_stream->BytesUntilLimit());
@@ -299,7 +326,7 @@ class FieldExtractor {
   absl::StatusOr<FieldPathNode> CreateFieldPathNode(
       const google::protobuf::Field& field) const;
 
-  // Returns the field path node of the map value field from the given proto map
+  // Returns the field path node of the map key field from the given proto map
   // field node. Proto map field is encoded as a repeated field of MapFieldEntry
   // message on the wire.
   //
@@ -316,6 +343,11 @@ class FieldExtractor {
   //
   // See MessageOptions.map_entry in
   // http://google3/net/proto2/proto/descriptor.proto.
+  absl::StatusOr<FieldPathNode> ResolveMapKeyNode(
+      const FieldPathNode& map_node) const;
+
+  // Returns the field path node of the map value field from the given proto map
+  // field node.
   absl::StatusOr<FieldPathNode> ResolveMapValueNode(
       const FieldPathNode& map_node) const;
 
