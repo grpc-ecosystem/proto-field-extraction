@@ -28,8 +28,6 @@
 
 namespace google::protobuf::field_extraction::testing {
 
-namespace {
-
 using ::google::protobuf::Type;
 
 absl::Status GetContents(absl::string_view file_name, std::string* output) {
@@ -74,8 +72,6 @@ absl::StatusOr<google::protobuf::FileDescriptorSet> GetDescriptorFromBinary(
   }
   return descriptor_set;
 }
-
-}  // namespace
 
 std::string GetTestDataFilePath(absl::string_view path) {
   return absl::StrCat("proto_field_extraction/", std::string(path));

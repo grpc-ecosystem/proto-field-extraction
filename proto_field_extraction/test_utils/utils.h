@@ -17,12 +17,18 @@
 #ifndef PROTO_FIELD_EXTRACTION_SRC_TEST_UTILS_UTILS_H_
 #define PROTO_FIELD_EXTRACTION_SRC_TEST_UTILS_UTILS_H_
 
+#include "net/proto2/proto/descriptor.proto.h"
 #include "absl/status/statusor.h"
 #include "grpc_transcoding/type_helper.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/coded_stream.h"
 
 namespace google::protobuf::field_extraction::testing {
+
+absl::Status GetContents(absl::string_view file_name, std::string* output);
+
+absl::StatusOr<proto2::FileDescriptorSet> GetDescriptorFromBinary(
+    absl::string_view filename);
 
 absl::Status GetTextProto(absl::string_view filename, google::protobuf::Message* proto);
 
