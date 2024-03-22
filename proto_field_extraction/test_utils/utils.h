@@ -17,7 +17,7 @@
 #ifndef PROTO_FIELD_EXTRACTION_SRC_TEST_UTILS_UTILS_H_
 #define PROTO_FIELD_EXTRACTION_SRC_TEST_UTILS_UTILS_H_
 
-#include "net/proto2/proto/descriptor.proto.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/status/statusor.h"
 #include "grpc_transcoding/type_helper.h"
 #include "google/protobuf/descriptor.h"
