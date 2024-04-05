@@ -42,7 +42,7 @@ class FieldValueExtractorInterface {
       const CodedInputStreamWrapperFactory& message) const = 0;
 
   // Extracts the proto field as `google.protobuf.Value` from a proto `message`.
-  virtual absl::StatusOr<std::vector<Value>> ExtractValue(
+  virtual absl::StatusOr<Value> ExtractValue(
       const CodedInputStreamWrapperFactory& message) const = 0;
 };
 

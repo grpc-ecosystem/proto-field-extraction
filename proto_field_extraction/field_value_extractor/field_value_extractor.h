@@ -64,19 +64,16 @@ class FieldValueExtractor : public FieldValueExtractorInterface {
       const CodedInputStreamWrapperFactory& message) const override;
 
   // Extracts the proto field value(s) that match the field path within root
-  // message type from the proto `message`.
-  // If any of the field path nodes is a repeated field (including map)
-  // containing multiple values, then the return vector will contain multiple
-  // strings.
+  // message type from the proto `message` and extracted values(s) are contained
+  // in `list_value` of the returned `Value`. If any of the field path nodes is
+  // a repeated field (including map) containing multiple values, the
+  // returned `list_value` will contain multiple elements.
   //
   // Returns an error status if the given proto `message` type does not
   // match the type specified by the root message type that was used to create
   // a field extractor. All the other error status should be caught and return
   // in `FieldValueExtractorFactory::Create()`.
-  //
-  // Different to Extract() function, ExtractValue() function will save the
-  // extracted field as a vector of `google.protobuf.Value` instances.
-  absl::StatusOr<std::vector<Value>> ExtractValue(
+  absl::StatusOr<Value> ExtractValue(
       const CodedInputStreamWrapperFactory& message) const override;
 
  private:

@@ -53,6 +53,7 @@ using ::testing::ElementsAre;
 using ::ocpdiag::testing::EqualsProto;
 using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
+using ::testing::proto::IgnoringRepeatedFieldOrdering;
 using ::ocpdiag::testing::IsOkAndHolds;
 using ::ocpdiag::testing::ParseTextProtoOrDie;
 
@@ -1612,16 +1613,20 @@ TEST_F(ExtractFieldAsProtoValueTest, LeafNodeTypeString) {
       GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
 
   EXPECT_THAT(field_extractor.ExtractValue(*field_extractor_),
-              IsOkAndHolds(UnorderedElementsAre(EqualsProto(
+              IsOkAndHolds(IgnoringRepeatedFieldOrdering(EqualsProto(
                   R"pb(
-                    struct_value {
-                      fields {
-                        key: "map_string_field_key_0"
-                        value { string_value: "string_0" }
-                      }
-                      fields {
-                        key: "map_string_field_key_1"
-                        value { string_value: "string_1" }
+                    list_value {
+                      values {
+                        struct_value {
+                          fields {
+                            key: "map_string_field_key_0"
+                            value { string_value: "string_0" }
+                          }
+                          fields {
+                            key: "map_string_field_key_1"
+                            value { string_value: "string_1" }
+                          }
+                        }
                       }
                     }
                   )pb"))));
@@ -1634,67 +1639,59 @@ TEST_F(ExtractFieldAsProtoValueTest, AllMapValueInRepeatedFields) {
 
   EXPECT_THAT(
       field_extractor.ExtractValue(*field_extractor_),
-      IsOkAndHolds(UnorderedElementsAre(
-          EqualsProto(
-              R"pb(struct_value {
-                     fields {
-                       key: "map_string_field_key_0"
-                       value {
-                         string_value: "1_level1_1_level2_1_leaf_string_0"
-                       }
-                     }
-                     fields {
-                       key: "map_string_field_key_1"
-                       value {
-                         string_value: "1_level1_1_level2_1_leaf_string_1"
-                       }
-                     }
-                   })pb"),
-          EqualsProto(
-              R"pb(struct_value {
-                     fields {
-                       key: "map_string_field_key_0"
-                       value {
-                         string_value: "1_level1_1_level2_2_leaf_string_0"
-                       }
-                     }
-                     fields {
-                       key: "map_string_field_key_1"
-                       value {
-                         string_value: "1_level1_1_level2_2_leaf_string_1"
-                       }
-                     }
-                   })pb"),
-          EqualsProto(
-              R"pb(struct_value {
-                     fields {
-                       key: "map_string_field_key_0"
-                       value {
-                         string_value: "1_level1_2_level2_1_leaf_string_0"
-                       }
-                     }
-                     fields {
-                       key: "map_string_field_key_1"
-                       value {
-                         string_value: "1_level1_2_level2_1_leaf_string_1"
-                       }
-                     }
-                   })pb"),
-          EqualsProto(
-              R"pb(struct_value {
-                     fields {
-                       key: "map_string_field_key_0"
-                       value {
-                         string_value: "1_level1_2_level2_2_leaf_string_0"
-                       }
-                     }
-                     fields {
-                       key: "map_string_field_key_1"
-                       value {
-                         string_value: "1_level1_2_level2_2_leaf_string_1"
-                       }
-                     }
-                   })pb"))));
+      IsOkAndHolds(IgnoringRepeatedFieldOrdering(EqualsProto(
+          R"pb(
+            list_value {
+              values {
+                struct_value {
+                  fields {
+                    key: "map_string_field_key_0"
+                    value { string_value: "1_level1_1_level2_1_leaf_string_0" }
+                  }
+                  fields {
+                    key: "map_string_field_key_1"
+                    value { string_value: "1_level1_1_level2_1_leaf_string_1" }
+                  }
+                }
+              }
+              values {
+                struct_value {
+                  fields {
+                    key: "map_string_field_key_0"
+                    value { string_value: "1_level1_1_level2_2_leaf_string_0" }
+                  }
+                  fields {
+                    key: "map_string_field_key_1"
+                    value { string_value: "1_level1_1_level2_2_leaf_string_1" }
+                  }
+                }
+              }
+              values {
+                struct_value {
+                  fields {
+                    key: "map_string_field_key_0"
+                    value { string_value: "1_level1_2_level2_1_leaf_string_0" }
+                  }
+                  fields {
+                    key: "map_string_field_key_1"
+                    value { string_value: "1_level1_2_level2_1_leaf_string_1" }
+                  }
+                }
+              }
+              values {
+                struct_value {
+                  fields {
+                    key: "map_string_field_key_0"
+                    value { string_value: "1_level1_2_level2_2_leaf_string_0" }
+                  }
+                  fields {
+                    key: "map_string_field_key_1"
+                    value { string_value: "1_level1_2_level2_2_leaf_string_1" }
+                  }
+                }
+              }
+            }
+          )pb"))));
 }
 
 TEST_F(ExtractFieldAsProtoValueTest, NonLeafNodeAsRepeatedMap) {
@@ -1703,14 +1700,15 @@ TEST_F(ExtractFieldAsProtoValueTest, NonLeafNodeAsRepeatedMap) {
         /*field_path=*/"map_singular_field.string_field",
         GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
 
-    EXPECT_THAT(field_extractor.ExtractValue(*field_extractor_),
-                IsOkAndHolds(UnorderedElementsAre(
-                    EqualsProto(
-                        R"pb(string_value: "map_singular_field_value_string_0"
-                        )pb"),
-                    EqualsProto(
-                        R"pb(string_value: "map_singular_field_value_string_1"
-                        )pb"))));
+    EXPECT_THAT(
+        field_extractor.ExtractValue(*field_extractor_),
+        IsOkAndHolds(IgnoringRepeatedFieldOrdering(EqualsProto(
+            R"pb(
+              list_value {
+                values { string_value: "map_singular_field_value_string_0" }
+                values { string_value: "map_singular_field_value_string_1" }
+              }
+            )pb"))));
   }
   {
     FieldValueExtractor field_extractor(
@@ -1718,12 +1716,13 @@ TEST_F(ExtractFieldAsProtoValueTest, NonLeafNodeAsRepeatedMap) {
         GetCreateFieldExtractorFunc(*field_extractor_test_message_type_));
 
     EXPECT_THAT(field_extractor.ExtractValue(*field_extractor_),
-                IsOkAndHolds(UnorderedElementsAre(EqualsProto(
-                                                      R"pb(string_value: "2"
-                                                      )pb"),
-                                                  EqualsProto(
-                                                      R"pb(string_value: "22"
-                                                      )pb"))));
+                IsOkAndHolds(IgnoringRepeatedFieldOrdering(EqualsProto(
+                    R"pb(
+                      list_value {
+                        values { string_value: "2" }
+                        values { string_value: "22" }
+                      }
+                    )pb"))));
   }
 }
 }  // namespace testing

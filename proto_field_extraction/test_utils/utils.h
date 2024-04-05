@@ -27,7 +27,7 @@ namespace google::protobuf::field_extraction::testing {
 
 absl::Status GetContents(absl::string_view file_name, std::string* output);
 
-absl::StatusOr<proto2::FileDescriptorSet> GetDescriptorFromBinary(
+absl::StatusOr<google::protobuf::FileDescriptorSet> GetDescriptorFromBinary(
     absl::string_view filename);
 
 absl::Status GetTextProto(absl::string_view filename, google::protobuf::Message* proto);

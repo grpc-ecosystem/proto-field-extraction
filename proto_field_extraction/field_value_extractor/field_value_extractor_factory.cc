@@ -21,6 +21,7 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -72,28 +73,32 @@ absl::Status ValidateLeafNode(const Field& field) {
 }  // namespace
 
 absl::StatusOr<std::unique_ptr<FieldValueExtractorInterface>>
-FieldValueExtractorFactory::Create(absl::string_view message_type,
-                                   absl::string_view field_path,
-                                   bool support_any) const {
+FieldValueExtractorFactory::Create(
+    absl::string_view message_type, absl::string_view field_path,
+    bool support_any, absl::string_view custom_proto_map_entry_name) const {
   if (message_type.empty()) {
     return absl::InvalidArgumentError("Empty message type");
   }
 
   ASSIGN_OR_RETURN(FieldMetadata field_metadata,
                    ValidateFieldPathAndCollectMetadata(
-                       message_type, field_path, support_any, type_finder_));
+                       message_type, field_path, support_any, type_finder_,
+                       custom_proto_map_entry_name));
 
   return std::make_unique<FieldValueExtractor>(
-      std::string(field_path), [this, &message_type]() {
+      std::string(field_path),
+      [this, &message_type, &custom_proto_map_entry_name]() {
         return std::make_unique<FieldExtractor>(
-            type_finder_(std::string(message_type)), type_finder_);
+            type_finder_(std::string(message_type)), type_finder_,
+            custom_proto_map_entry_name);
       });
 }
 
 absl::StatusOr<std::unique_ptr<FieldValueExtractorInterface>>
 FieldValueExtractorFactory::Create(absl::string_view message_type,
                                    absl::string_view field_path) const {
-  return Create(message_type, field_path, /*support_any=*/false);
+  return Create(message_type, field_path, /*support_any=*/false,
+                /*custom_proto_map_entry_name=*/"");
 }
 
 absl::StatusOr<FieldMetadata>

@@ -61,7 +61,7 @@ class FieldValueExtractorFactory : public FieldValueExtractorInterfaceFactory {
   // validate at runtime based on the type information.
   absl::StatusOr<std::unique_ptr<FieldValueExtractorInterface>> Create(
       absl::string_view message_type, absl::string_view field_path,
-      bool support_any) const;
+      bool support_any, absl::string_view custom_proto_map_entry_name) const;
 
   FieldValueExtractorFactory& operator=(const FieldValueExtractorFactory&) =
       delete;
