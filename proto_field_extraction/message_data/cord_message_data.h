@@ -85,7 +85,7 @@ class CordMessageData : public MessageData {
 
   absl::Cord ToCord() const override { return cord_; }
 
-  void CopyFrom(const absl::Cord& other) override { 
+  void CopyFrom(const absl::Cord& other) override {
     cord_.Clear();
     cord_.Append(other);
   }

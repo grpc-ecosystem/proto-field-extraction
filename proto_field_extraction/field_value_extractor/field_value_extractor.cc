@@ -241,7 +241,7 @@ absl::StatusOr<std::vector<Value>> ExtractMapField(
     const Field* value_field, CodedInputStream* input_stream) {
   std::vector<Value> result;
   // Only parse the map whose key type is STRING format.
-  if (key_field->kind() != Field::TYPE_STRING &&
+  if (key_field->kind() != Field::TYPE_STRING ||
       value_field->kind() != Field::TYPE_STRING) {
     return absl::InvalidArgumentError(
         "Only STRING key and value are supported for map field extraction.");
@@ -373,10 +373,17 @@ absl::StatusOr<std::vector<std::string>> FieldValueExtractor::Extract(
   return result;
 }
 
-absl::StatusOr<std::vector<Value>> FieldValueExtractor::ExtractValue(
+absl::StatusOr<Value> FieldValueExtractor::ExtractValue(
     const CodedInputStreamWrapperFactory& message) const {
-  return field_extractor_->ExtractRepeatedFieldInfoFlattened<Value>(
-      field_path_, message, ExtractLeafField, ExtractMapField);
+  ASSIGN_OR_RETURN(
+      auto values,
+      field_extractor_->ExtractRepeatedFieldInfoFlattened<Value>(
+          field_path_, message, ExtractLeafField, ExtractMapField));
+  Value result;
+  for (auto& value : values) {
+    result.mutable_list_value()->mutable_values()->Add(std::move(value));
+  }
+  return result;
 }
 
 }  // namespace google::protobuf::field_extraction

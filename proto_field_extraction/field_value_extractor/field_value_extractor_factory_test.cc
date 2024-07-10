@@ -327,9 +327,9 @@ TEST_F(FieldValueExtractorFactoryTest, ValidFieldPathRepeatedNestedMap) {
 }
 
 TEST_F(FieldValueExtractorFactoryTest, SingularAnyField) {
-  EXPECT_OK(field_extractor_factory_->Create(kFieldExtractorTestMessageTypeUrl,
-                                             "singular_any_field.name",
-                                             /*support_any=*/true));
+  EXPECT_OK(field_extractor_factory_->Create(
+      kFieldExtractorTestMessageTypeUrl, "singular_any_field.name",
+      /*support_any=*/true, /*custom_proto_map_entry_name=*/""));
 
   EXPECT_THAT(
       field_extractor_factory_->Create(kFieldExtractorTestMessageTypeUrl,
@@ -340,9 +340,9 @@ TEST_F(FieldValueExtractorFactoryTest, SingularAnyField) {
 }
 
 TEST_F(FieldValueExtractorFactoryTest, RepeatedAnyField) {
-  EXPECT_OK(field_extractor_factory_->Create(kFieldExtractorTestMessageTypeUrl,
-                                             "repeated_any_fields.name",
-                                             /*support_any=*/true));
+  EXPECT_OK(field_extractor_factory_->Create(
+      kFieldExtractorTestMessageTypeUrl, "repeated_any_fields.name",
+      /*support_any=*/true, /*custom_proto_map_entry_name=*/""));
 
   EXPECT_THAT(
       field_extractor_factory_->Create(kFieldExtractorTestMessageTypeUrl,
@@ -350,6 +350,16 @@ TEST_F(FieldValueExtractorFactoryTest, RepeatedAnyField) {
       StatusIs(absl::StatusCode::kInvalidArgument,
                HasSubstr("Invalid fieldPath (repeated_any_fields.name): no "
                          "'name' field")));
+}
+
+TEST_F(FieldValueExtractorFactoryTest, InvalidFieldPathWithCustomMapEntryName) {
+  EXPECT_THAT(
+      field_extractor_factory_->Create(
+          kFieldExtractorTestMessageTypeUrl, "map_singular_field.string_field",
+          /*support_any=*/false,
+          /*custom_proto_map_entry_name=*/"custom_map_entry"),
+      StatusIs(absl::StatusCode::kInvalidArgument,
+               HasSubstr("Invalid fieldPath")));
 }
 
 TEST_F(FieldValueExtractorFactoryTest, InvalidNonLeafNode) {
